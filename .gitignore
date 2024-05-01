@@ -1,3 +1,11 @@
+.env*
+# Ensure .env.example file IS included
+!.env.example
+
+.python-version
+
+*.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
