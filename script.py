@@ -67,9 +67,10 @@ def load_test(conn, db_name, csv, cleanup=True):
     # slow down the overall time measurement. Maybe cache to a file?
     # TODO: Make the schema configurable
     test_record = (1, "foo", 2.345, 10000000000, "bar")
-
     values_str = prepare_values_str(test_record)
+    col_schema_clause = "(my_int INT, my_str STRING, my_flt FLOAT, my_big BIGINT, my_str2 STRING)"
     print(values_str)
+    print(col_schema_clause)
 
     # TODO: Make all iteration params configurable
     row_magnitudes = range(0, 2)  # range(0,5)
@@ -83,8 +84,8 @@ def load_test(conn, db_name, csv, cleanup=True):
                 num_inserts = ins_mult * (10**ins_mag)
                 table_name = f"insert_{num_rows}_rows_{num_inserts}_times"
                 fq_table = f"`{db_name}`.`{table_name}`"
-                create_sql = f"CREATE TABLE {fq_table} (my_int INT, my_str STRING, my_flt FLOAT, my_big BIGINT, my_str2 STRING)"
-                print("    " + create_sql)
+                create_sql = f"CREATE TABLE {fq_table} {col_schema_clause}"
+                print("    " + f"Creating table {fq_table}")
 
                 dbcursor = conn.cursor()
                 dbcursor.execute(create_sql)
