@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from impala.dbapi import connect
 from os import getenv
-from urllib.parse import urlparse
 
 
 cleanup = True
@@ -18,19 +17,26 @@ def setup_target(run_label):
     PASSWORD=getenv("JLT_PASSWORD", "PASSWORD_REQUIRED")
     JDBC_URL=getenv("JLT_JDBC_URL", "JDBC_URL_REQUIRED")
 
-    parsed = urlparse(JDBC_URL)
-    HOST = parsed.hostname
-    HOST = parsed.port
+    print(f"JDBC URL: {JDBC_URL}")
+    # Do it this hand-rolled way as urllib.parse chokes on some Impala
+    # JDBC URLs, I think due to the multiple scheme components.
+    HOST = JDBC_URL.split('/')[2]
+    HOST = HOST.split(':')[0]
     PORT = 443
-    conn = connect(
-        host=HOST,
-        port=PORT,
-        auth_mechanism="LDAP",
-        user=USERNAME,
-        password=PASSWORD,
-        use_http_transport=True,
-        http_path="cliservice",
-        use_ssl=True)
+
+    connection_kwargs = {
+        "host": HOST,
+        "port": PORT,
+        "auth_mechanism": "LDAP",
+        "user": USERNAME,
+        "password": PASSWORD,
+        "use_http_transport": True,
+        "http_path": "cliservice",
+        "use_ssl": True
+    }
+    print("Initiating Impala connection with params:")
+    print({ x: (connection_kwargs[x] if x != 'password' else 'xxxxxxxxx') for x in connection_kwargs.keys()})
+    conn = connect(**connection_kwargs)
 
     dbcursor = conn.cursor()
 
